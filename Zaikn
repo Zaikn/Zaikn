@@ -1,0 +1,61 @@
+/* Broches */
+const byte TRIGGER_PIN = 40; // Broche TRIGGER
+const byte ECHO_PIN = 38;    // Broche ECHO
+ 
+/* Timeout */
+const unsigned long MEASURE_TIMEOUT = 25000UL; // 25ms = ~8m à 340m/s
+
+/* Vitesse du son en mm/us */
+const float SOUND_SPEED = 340.0 / 1000;
+
+void setup() {
+   
+  /* Initialise le port série */
+  Serial.begin(115200);
+   
+  /* Initialise les broches */
+  pinMode(TRIGGER_PIN, OUTPUT);
+  digitalWrite(TRIGGER_PIN, LOW); // La broche TRIGGER doit être à LOW au repos
+  pinMode(ECHO_PIN, INPUT);
+}
+ 
+/** Fonction loop() */
+void loop() {
+  
+  /*Envoie d'une impulsion HIGH de 10µs sur la broche TRIGGER => début de la mesure*/
+  digitalWrite(TRIGGER_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIGGER_PIN, LOW);
+  
+  /*Mesure l'aller-retour entre l'envoie et la réception du signal grace à la broche ECHO */
+  long measure = pulseIn(ECHO_PIN, HIGH, MEASURE_TIMEOUT);
+   
+  /*Calcul la distance (un aller) */
+  float distance_mm = measure / 2.0 * SOUND_SPEED;
+   
+  /* Affiche les résultats cm avec condiion obstacle */
+  if (measure!=0)
+  {
+         if (distance_mm<=40 && distance_mm>0)
+        {
+                  Serial.print("ATTENTION OBSTACLE ! \n");
+                  Serial.print(F("Distance: "));
+                  Serial.print(distance_mm / 10.0, 2);
+                  Serial.print(F("cm\n"));
+        }
+        else
+        {
+                Serial.print(F("Distance: "));
+                Serial.print(distance_mm / 10.0, 2);
+                Serial.print(F("cm\n"));
+        }
+  }
+  else
+  {
+    Serial.print("Avance ducon, y a rien\n");
+  }
+        
+   
+  /* Délai d'attente */
+  delay(500);
+}
